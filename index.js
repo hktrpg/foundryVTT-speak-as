@@ -15,12 +15,32 @@ Hooks.once("init", () => {
      */
 });
 
+/***
+
+SPEAK
+speaker:
+actor: "Y0AF1TTJc62818xw"
+alias: "BBBC"
+scene: "h4pMkoiYTRL1AVto"
+token: "WR37HUvxw2akCWIE"
+
+修改行為
+1)必需選定一個名字
+i)可選自己的身份或自己擁有的TOKEN
+2)如場上有同樣的TOKEN，使用那個TOKEN發言
+3)沒有的話，則把發言名稱改成那個名字
 
 
+*/
 
-
-Hooks.on("preCreateChatMessage", (dialog, $element) => {
+Hooks.on("chatMessage", (dialog, $element, ABC) => {
     console.log('dialog', dialog)
-    console.log($element)
+    console.log('$element', $element)
+    console.log('ABC', ABC)
 
+    ABC.speaker.token = "XXX"
+    //2)如場上有同樣的TOKEN，使用那個TOKEN發言
+    //ABC.speaker.actor = '';
+    ABC.speaker.alias = 'XXX';
 });
+
