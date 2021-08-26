@@ -55,7 +55,7 @@ i)可選自己的身份或自己擁有的TOKEN
 Hooks.on("renderSidebarTab", (dialog, $element, ABC) => {
     var HTML;
     let addText = `<select name="cars" id="cars"  class="roll-type-select">
-    <optgroup label="Default Speak As....">
+    <optgroup label="Speak As....">
     <option value="volvo">Volvo</option>
     <option value="saab">Saab</option>
     <option value="mercedes">Mercedes</option>
