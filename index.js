@@ -1,21 +1,6 @@
 var isDefaultName = false;
-var innerHTML;
-Hooks.once("init", () => {
-
-    console.log('AAAAAAAAAAAAAAAAAs')
-    /*
-    game.settings.register("default_name", "isDefaultName", {
-        name: 'is Default Name',
-        hint: 'If checked, there will be a be default name by placeholder in box, otherwise will focus only.',
-        scope: "world",
-        config: true,
-        default: false,
-        type: Boolean
-    });
-    isDefaultName = game.settings.get("default_name", "isDefaultName");
-
-     */
-});
+var HTML;
+var base = { switch: false, data: '' };
 
 /***
 
@@ -52,28 +37,19 @@ i)可選自己的身份或自己擁有的TOKEN
 
 
 
-Hooks.on("renderSidebarTab", (dialog, $element, ABC) => {
-    var HTML;
+Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
     /**
      * 自己的登入名字
      * 自己擁有的角色
     */
-    ($element.find(`div#chat - controls.flexrow`)) ? HTML = $element.find(`div#chat - controls.flexrow`) : null;
-    if (HTML[0]) {
-        console.log(HTML[0].innerHTML)
-        //innerHTML = HTML[0].innerHTML;
-        HTML[0].innerHTML = updateSpeakerList() + HTML[0].innerHTML;
+    ($element.find(`div#chat-controls.flexrow`)[0]) ? HTML = $element.find(`div#chat-controls.flexrow`)[0] : null;
+    if (HTML) {
+        if (!base.switch) {
+            base.data = HTML.innerHTML;
+            base.switch = true;
+        }
+        HTML.innerHTML = updateSpeakerList() + base.data;
     }
-
-    //  innerHTML[0].innerHTML = ""
-
-    // outerHTML
-
-    //  innerHTML.prevObject[0].outerHTML=''
-    /// ABC.speaker.token = "XXX"
-    //2)如場上有同樣的TOKEN，使用那個TOKEN發言
-    //ABC.speaker.actor = '';
-    //ABC.speaker.alias = 'XXX';
 });
 
 
@@ -83,7 +59,7 @@ function updateSpeakerList() {
 
     let addText = `<select name="namelist" id="namelist"  class="roll-type-select">
     <optgroup label="Speak As....">
-    <option value="user">${myUser.name}</option>`;
+    <option value="userName" name="XX">${myUser.name}</option>`;
     for (let index = 0; index < myactors.length; index++) {
         addText += `\n<option value="${myactors[index].id}">${myactors[index].name}</option>`
     };
@@ -91,14 +67,35 @@ function updateSpeakerList() {
     return addText;
 }
 
-Hooks.on("chatMessage", (dialog, $element, ABC) => {
-    //   console.log('dialog', dialog)
-    // console.log('$element', $element)
-    // console.log('ABC', ABC)
+Hooks.on("chatMessage", (dialog, $element, targets) => {
 
-    ABC.speaker.token = "XXX"
+    let namelist = document.getElementById('namelist');
+
+    if (!namelist) return;
+    switch (namelist.value) {
+        case 'userName':
+            targets.speaker.token = null;
+            targets.speaker.alias = null;
+            break;
+        default:
+            let map = game.scenes.find(scene => scene.isView);
+            let target = map.tokens.find(token => {
+                return token.name == namelist.options[namelist.selectedIndex].text
+            })
+            if (!target) {
+                targets.speaker.token = 'Speak As zzzz';
+                targets.speaker.alias = namelist.options[namelist.selectedIndex].text;
+            }
+            break;
+    }
+
+    //targets.speaker.token = "XXX"
     //2)如場上有同樣的TOKEN，使用那個TOKEN發言
-    //ABC.speaker.actor = '';
-    ABC.speaker.alias = 'XXX';
+    //targets.speaker.actor = '';
+    //  targets.speaker.alias = 'XXX';
 });
 
+
+Hooks.on("renderActorDirectory", (dialog, $element, targets) => {
+    HTML.innerHTML = updateSpeakerList() + base.data;
+});
