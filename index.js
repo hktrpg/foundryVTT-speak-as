@@ -68,9 +68,7 @@ function updateSpeakerList() {
 }
 
 Hooks.on("chatMessage", (dialog, $element, targets) => {
-
     let namelist = document.getElementById('namelist');
-
     if (!namelist) return;
     switch (namelist.value) {
         case 'userName':
@@ -84,6 +82,10 @@ Hooks.on("chatMessage", (dialog, $element, targets) => {
             })
             if (!target) {
                 targets.speaker.token = 'Speak As zzzz';
+                targets.speaker.alias = namelist.options[namelist.selectedIndex].text;
+            }
+            if (target) {
+                targets.speaker.token = target.id;
                 targets.speaker.alias = namelist.options[namelist.selectedIndex].text;
             }
             break;
