@@ -1,7 +1,7 @@
 {
   "name": "Speak-As",
-  "title": "Speak As...",
-  "description": "Add a list to speak as someone",
+  "title": "Speak As……",
+  "description": "Specify the identity of the speaker, no longer based on the selected of the Token",
   "author": "Sad",
   "authors": [],
   "url": "https://github.com/hktrpg/foundryVTT-speak-as",
