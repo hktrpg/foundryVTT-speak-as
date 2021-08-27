@@ -1,15 +1,11 @@
-var isDefaultName = false;
-var HTML;
-var base = { switch: false, data: '' };
-
 /***
 
 SPEAK
 speaker:
-actor: "Y0AF1TTJc62818xw"
+actor: "Y0A5555818xw"
 alias: "BBBC"
-scene: "h4pMkoiYTRL1AVto"
-token: "WR37HUvxw2akCWIE"
+scene: "h4pM555L1AVto"
+token: "WR37H5552akCWIE"
 
 修改行為
 1)必需選定一個名字
@@ -42,14 +38,10 @@ Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
      * 自己的登入名字
      * 自己擁有的角色
     */
-    ($element.find(`div#chat-controls.flexrow`)[0]) ? HTML = $element.find(`div#chat-controls.flexrow`)[0] : null;
-    if (HTML) {
-        if (!base.switch) {
-            base.data = HTML.innerHTML;
-            base.switch = true;
-        }
-        HTML.innerHTML = updateSpeakerList() + base.data;
-    }
+    let HTML = $element.find(`div#chat-controls.flexrow`)[0];
+    if (!HTML) return;
+    $('#namelist').remove();
+    $('#chat-controls.flexrow').append(updateSpeakerList());
 });
 
 
@@ -99,5 +91,6 @@ Hooks.on("chatMessage", (dialog, $element, targets) => {
 
 
 Hooks.on("renderActorDirectory", (dialog, $element, targets) => {
-    HTML.innerHTML = updateSpeakerList() + base.data;
+    $('#namelist').remove();
+    $('#chat-controls.flexrow').append(updateSpeakerList());
 });
