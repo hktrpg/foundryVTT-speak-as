@@ -41,7 +41,7 @@ Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
     let HTML = $element.find(`div#chat-controls.flexrow`)[0];
     if (!HTML) return;
     $('#namelist').remove();
-    $('#chat-controls.flexrow').append(updateSpeakerList());
+    $('#chat-controls.flexrow').prepend(updateSpeakerList());
 });
 
 
@@ -92,5 +92,5 @@ Hooks.on("chatMessage", (dialog, $element, targets) => {
 
 Hooks.on("renderActorDirectory", (dialog, $element, targets) => {
     $('#namelist').remove();
-    $('#chat-controls.flexrow').append(updateSpeakerList());
+    $('#chat-controls.flexrow').prepend(updateSpeakerList());
 });
