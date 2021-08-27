@@ -54,23 +54,15 @@ i)可選自己的身份或自己擁有的TOKEN
 
 Hooks.on("renderSidebarTab", (dialog, $element, ABC) => {
     var HTML;
-    let addText = `<select name="cars" id="cars"  class="roll-type-select">
-    <optgroup label="Speak As....">
-    <option value="volvo">Volvo</option>
-    <option value="saab">Saab</option>
-    <option value="mercedes">Mercedes</option>
-    <option value="audi">Audi</option>
-  </select>`;
     /**
      * 自己的登入名字
      * 自己擁有的角色
     */
-    ($element.find(`div#chat-controls.flexrow`)) ? HTML = $element.find(`div#chat-controls.flexrow`) : null;
+    ($element.find(`div#chat - controls.flexrow`)) ? HTML = $element.find(`div#chat - controls.flexrow`) : null;
     if (HTML[0]) {
         console.log(HTML[0].innerHTML)
         //innerHTML = HTML[0].innerHTML;
-        HTML[0].innerHTML = addText + HTML[0].innerHTML;
-
+        HTML[0].innerHTML = updateSpeakerList() + HTML[0].innerHTML;
     }
 
     //  innerHTML[0].innerHTML = ""
@@ -83,6 +75,21 @@ Hooks.on("renderSidebarTab", (dialog, $element, ABC) => {
     //ABC.speaker.actor = '';
     //ABC.speaker.alias = 'XXX';
 });
+
+
+function updateSpeakerList() {
+    let myUser = game.users.find(user => user.id == game.userId);
+    let myactors = game.actors.filter(actor => actor.permission >= 2);
+
+    let addText = `<select name="namelist" id="namelist"  class="roll-type-select">
+    <optgroup label="Speak As....">
+    <option value="user">${myUser.name}</option>`;
+    for (let index = 0; index < myactors.length; index++) {
+        addText += `\n<option value="${myactors[index].id}">${myactors[index].name}</option>`
+    };
+    addText += `\n</select>`;
+    return addText;
+}
 
 Hooks.on("chatMessage", (dialog, $element, ABC) => {
     //   console.log('dialog', dialog)
