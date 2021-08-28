@@ -64,6 +64,7 @@ Hooks.on("chatMessage", (dialog, $element, targets) => {
     if (!namelist) return;
     switch (namelist.value) {
         case 'userName':
+            targets.speaker.actor = null;
             targets.speaker.token = null;
             targets.speaker.alias = null;
             break;
