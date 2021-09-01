@@ -1,3 +1,76 @@
+Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
+    /**
+     * 自己的登入名字
+     * 自己擁有的角色
+    */
+    let HTML = $element.find(`div#chat-controls.flexrow`)[0];
+    if (!HTML) return;
+    $('#namelist').remove();
+    $('#chat-controls.flexrow').prepend(updateSpeakerList());
+    $('#chat-controls.flexrow').prepend(checkedBox);
+
+});
+
+const checkedBox = ` <input type="checkbox" id="speakerSwitch" name="speakerSwitch" checked>`
+
+function updateSpeakerList() {
+    let myUser = game.users.find(user => user.id == game.userId);
+    let myactors = game.actors.filter(actor => actor.permission >= 2);
+    let selectedCharacter = myactors.find(actor => actor.id === myUser.character?.id);
+
+    let addText = `<select name="namelist" id="namelist"  class="roll-type-select">
+    <optgroup label="Speak As....">`;
+    if (selectedCharacter) addText += `<option value="${selectedCharacter.id}">${selectedCharacter.name}</option>`
+    addText += `<option value="userName" name="XX">${myUser.name}</option>`
+    for (let index = 0; index < myactors.length; index++) {
+        addText += `\n<option value="${myactors[index].id}">${myactors[index].name}</option>`
+    };
+    addText += `\n</select>`;
+    return addText;
+}
+
+Hooks.on("chatMessage", (dialog, $element, targets) => {
+    let namelist = document.getElementById('namelist');
+    let checked = document.getElementById("speakerSwitch").checked;
+    console.log('checked', checked)
+    if (!checked) return;
+    if (!namelist) return;
+    switch (namelist.value) {
+        case 'userName':
+            targets.speaker.actor = null;
+            targets.speaker.token = null;
+            targets.speaker.alias = null;
+            break;
+        default:
+            let map = game.scenes.find(scene => scene.isView);
+            let target = map.tokens.find(token => {
+                return token.name == namelist.options[namelist.selectedIndex].text
+            })
+            if (!target) {
+                targets.speaker.token = 'Speak As zzzz';
+                targets.speaker.alias = namelist.options[namelist.selectedIndex].text;
+            }
+            if (target) {
+                targets.speaker.token = target.id;
+                targets.speaker.alias = namelist.options[namelist.selectedIndex].text;
+            }
+            break;
+    }
+
+});
+
+
+Hooks.on("renderActorDirectory", (dialog, $element, targets) => {
+    $('#namelist').remove();
+    $('#chat-controls.flexrow').prepend(updateSpeakerList());
+});
+
+
+    //targets.speaker.token = "XXX"
+    //2)如場上有同樣的TOKEN，使用那個TOKEN發言
+    //targets.speaker.actor = '';
+    //  targets.speaker.alias = 'XXX';
+
 /***
 
 SPEAK
@@ -30,68 +103,3 @@ i)可選自己的身份或自己擁有的TOKEN
         </div>
 
 */
-
-
-
-Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
-    /**
-     * 自己的登入名字
-     * 自己擁有的角色
-    */
-    let HTML = $element.find(`div#chat-controls.flexrow`)[0];
-    if (!HTML) return;
-    $('#namelist').remove();
-    $('#chat-controls.flexrow').prepend(updateSpeakerList());
-});
-
-
-function updateSpeakerList() {
-    let myUser = game.users.find(user => user.id == game.userId);
-    let myactors = game.actors.filter(actor => actor.permission >= 2);
-
-    let addText = `<select name="namelist" id="namelist"  class="roll-type-select">
-    <optgroup label="Speak As....">
-    <option value="userName" name="XX">${myUser.name}</option>`;
-    for (let index = 0; index < myactors.length; index++) {
-        addText += `\n<option value="${myactors[index].id}">${myactors[index].name}</option>`
-    };
-    addText += `\n</select>`;
-    return addText;
-}
-
-Hooks.on("chatMessage", (dialog, $element, targets) => {
-    let namelist = document.getElementById('namelist');
-    if (!namelist) return;
-    switch (namelist.value) {
-        case 'userName':
-            targets.speaker.actor = null;
-            targets.speaker.token = null;
-            targets.speaker.alias = null;
-            break;
-        default:
-            let map = game.scenes.find(scene => scene.isView);
-            let target = map.tokens.find(token => {
-                return token.name == namelist.options[namelist.selectedIndex].text
-            })
-            if (!target) {
-                targets.speaker.token = 'Speak As zzzz';
-                targets.speaker.alias = namelist.options[namelist.selectedIndex].text;
-            }
-            if (target) {
-                targets.speaker.token = target.id;
-                targets.speaker.alias = namelist.options[namelist.selectedIndex].text;
-            }
-            break;
-    }
-
-    //targets.speaker.token = "XXX"
-    //2)如場上有同樣的TOKEN，使用那個TOKEN發言
-    //targets.speaker.actor = '';
-    //  targets.speaker.alias = 'XXX';
-});
-
-
-Hooks.on("renderActorDirectory", (dialog, $element, targets) => {
-    $('#namelist').remove();
-    $('#chat-controls.flexrow').prepend(updateSpeakerList());
-});

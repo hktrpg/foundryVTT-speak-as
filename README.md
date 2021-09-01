@@ -5,9 +5,15 @@
 
 Specify the identity of the speaker, no longer based on the selected of the Token
 
-![](./readme.png)
+![readme](./readme.png)
 
 ## Changelog
+
+### v1.1.0
+
+Add a checkbox for switch function.
+
+First character be selected character.
 
 ### v1.0.0
 
