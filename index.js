@@ -9,21 +9,25 @@ Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
     $('#chat-controls.flexrow').prepend(updateSpeakerList());
     $('#chat-controls.flexrow').prepend(checkedBox);
     let color = $(".roll-type-select").css("color");
-    let height = $(".roll-type-select").css("color");
+    let height = $(".roll-type-select").css("height");
+    let bgcolor = $(".roll-type-select").css("background");
+    let width = $(".roll-type-select").css("width");
     var x = document.querySelectorAll("#namelist");
-    x[0].style.setProperty("width", '80%', "important")
+    x[0].style.setProperty("width", width, "important")
     x[0].style.setProperty("color", color, "important")
     x[0].style.setProperty("height", height, "important")
+    x[0].style.setProperty("background", bgcolor, "important")
 });
 
-const checkedBox = ``
+
 
 function updateSpeakerList() {
     let myUser = game.users.find(user => user.id == game.userId);
     let myactors = game.actors.filter(actor => actor.permission >= 2);
     let selectedCharacter = myactors.find(actor => actor.id === myUser.character?.id);
 
-    let addText = `<div><input type="checkbox" id="speakerSwitch" name="speakerSwitch" checked><select name="namelist" id="namelist" class="namelist">
+    let addText = `<div style="word-break: break-all;"><input type="checkbox" id="speakerSwitch" name="speakerSwitch" checked>
+    <select name="namelist" id="namelist" class="namelist">
     <optgroup label="Speak As....">`;
     if (selectedCharacter) addText += `<option value="${selectedCharacter.id}">${selectedCharacter.name}</option>`
     addText += `<option value="userName" name="XX">${myUser.name}</option>`
@@ -37,7 +41,6 @@ function updateSpeakerList() {
 Hooks.on("chatMessage", (dialog, $element, targets) => {
     let namelist = document.getElementById('namelist');
     let checked = document.getElementById("speakerSwitch").checked;
-    console.log('checked', checked)
     if (!checked) return;
     if (!namelist) return;
     switch (namelist.value) {
