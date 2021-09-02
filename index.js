@@ -7,7 +7,6 @@ Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
     if (!HTML) return;
     $('#namelist').remove();
     $('#chat-controls.flexrow').prepend(updateSpeakerList());
-    $('#chat-controls.flexrow').prepend(checkedBox);
     let color = $(".roll-type-select").css("color");
     let height = $(".roll-type-select").css("height");
     let bgcolor = $(".roll-type-select").css("background");
@@ -17,6 +16,8 @@ Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
     x[0].style.setProperty("color", color, "important")
     x[0].style.setProperty("height", height, "important")
     x[0].style.setProperty("background", bgcolor, "important")
+    $('#namelist').attr('title', 'Speak As……');
+    $('#speakerSwitch').attr('title', 'Disable Speak As…… if unchecked');
 });
 
 
