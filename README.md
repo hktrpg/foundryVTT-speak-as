@@ -10,6 +10,10 @@ Specify the identity of the speaker, no longer based on the selected of the Toke
 
 ## Changelog
 
+### v1.1.1
+
+Get the style by js.
+
 ### v1.1.0
 
 Add a checkbox for switch function.
