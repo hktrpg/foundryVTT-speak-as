@@ -17,8 +17,9 @@ function updateSpeakerList() {
     let myUser = game.users.find(user => user.id == game.userId);
     let myactors = game.actors.filter(actor => actor.permission >= 2);
     let selectedCharacter = myactors.find(actor => actor.id === myUser.character?.id);
-
-    let addText = `<select name="namelist" id="namelist"  class="roll-type-select">
+    let width = $(".roll-type-select").width();
+    let color = $(".roll-type-select").css("color");
+    let addText = `<select name="namelist" id="namelist" style="width:${width};color:${color}">
     <optgroup label="Speak As....">`;
     if (selectedCharacter) addText += `<option value="${selectedCharacter.id}">${selectedCharacter.name}</option>`
     addText += `<option value="userName" name="XX">${myUser.name}</option>`
