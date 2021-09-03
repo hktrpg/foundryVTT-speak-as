@@ -10,7 +10,7 @@ Specify the identity of the speaker, no longer based on the selected of the Toke
 
 ## Changelog
 
-### v1.1.3
+### v1.1.4
 
 Get the style by js.
 
