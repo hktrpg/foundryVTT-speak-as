@@ -1,3 +1,7 @@
+var color;
+var height;
+var bgcolor;
+var width;
 Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
     /**
      * 自己的登入名字
@@ -5,17 +9,18 @@ Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
     */
     let HTML = $element.find(`div#chat-controls.flexrow`)[0];
     if (!HTML) return;
-    $('#namelist').remove();
+    $('#divnamelist').remove();
     $('#chat-controls.flexrow').prepend(updateSpeakerList());
-    let color = $(".roll-type-select").css("color");
-    let height = $(".roll-type-select").css("height");
-    let bgcolor = $(".roll-type-select").css("background");
-    let width = $(".roll-type-select").css("width");
+    $(".roll-type-select").css("color") ? color = $(".roll-type-select").css("color") : null;
+    $(".roll-type-select").css("height") ? height = $(".roll-type-select").css("height") : null;
+    $(".roll-type-select").css("background") ? bgcolor = $(".roll-type-select").css("background") : null;
+    $(".roll-type-select").css("width") ? width = $(".roll-type-select").css("width") : null;
+
     var x = document.querySelectorAll("#namelist");
-    x[0].style.setProperty("width", width, "important")
-    x[0].style.setProperty("color", color, "important")
-    x[0].style.setProperty("height", height, "important")
-    x[0].style.setProperty("background", bgcolor, "important")
+    if (width) x[0].style.setProperty("width", width, "important")
+    if (color) x[0].style.setProperty("color", color, "important")
+    if (height) x[0].style.setProperty("height", height, "important")
+    if (bgcolor) x[0].style.setProperty("background", bgcolor, "important")
     $('#namelist').attr('title', 'Speak As……');
     $('#speakerSwitch').attr('title', 'Disable Speak As…… if unchecked');
 });
@@ -27,7 +32,8 @@ function updateSpeakerList() {
     let myactors = game.actors.filter(actor => actor.permission >= 2);
     let selectedCharacter = myactors.find(actor => actor.id === myUser.character?.id);
 
-    let addText = `<div style="word-break: break-all;"><input type="checkbox" id="speakerSwitch" name="speakerSwitch" checked>
+    let addText = `<div style="word-break: break-all;" id="divnamelist">
+<input type="checkbox" id="speakerSwitch" name="speakerSwitch" checked>
     <select name="namelist" id="namelist" class="namelist">
     <optgroup label="Speak As....">`;
     if (selectedCharacter) addText += `<option value="${selectedCharacter.id}">${selectedCharacter.name}</option>`
@@ -70,8 +76,19 @@ Hooks.on("chatMessage", (dialog, $element, targets) => {
 
 
 Hooks.on("renderActorDirectory", (dialog, $element, targets) => {
-    $('#namelist').remove();
+    $('#divnamelist').remove();
     $('#chat-controls.flexrow').prepend(updateSpeakerList());
+
+
+    $(".roll-type-select").css("color") ? color = $(".roll-type-select").css("color") : null;
+    $(".roll-type-select").css("height") ? height = $(".roll-type-select").css("height") : null;
+    $(".roll-type-select").css("background") ? bgcolor = $(".roll-type-select").css("background") : null;
+    $(".roll-type-select").css("width") ? width = $(".roll-type-select").css("width") : null;
+    var x = document.querySelectorAll("#namelist");
+    if (width) x[0].style.setProperty("width", width, "important")
+    if (color) x[0].style.setProperty("color", color, "important")
+    if (height) x[0].style.setProperty("height", height, "important")
+    if (bgcolor) x[0].style.setProperty("background", bgcolor, "important")
 });
 
 
