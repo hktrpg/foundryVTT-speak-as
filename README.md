@@ -8,6 +8,13 @@ Specify the identity of the speaker, no longer based on the selected of the Toke
 
 ![readme](./readme.png)
 
+## Behavior
+
+- A select bar for identity speaker
+  - Will be on top if there is a 《Selected Character》
+- A checkbox to contral 《Speak As》
+  - Unchecked checkbox will Use the original FVTT Spearker setting.(Seleted token takes precedence over selected character)
+
 ## Changelog
 
 ### v1.1.4
@@ -22,4 +29,4 @@ First character be selected character.
 
 ### v1.0.0
 
-Done. 
+Done.
