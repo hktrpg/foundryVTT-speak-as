@@ -22,7 +22,7 @@ Specify the identity of the speaker, no longer based on the selected token
 
 ## Changelog
 
-### v1.1.4
+### v1.1.5
 
 Get the style by js.
 
