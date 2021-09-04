@@ -15,6 +15,11 @@ Specify the identity of the speaker, no longer based on the selected token
 - A checkbox to contral 《Speak As》
   - Unchecked checkbox will Use the original FVTT Spearker setting.(Seleted token takes precedence over selected character)
 
+## Current Problem
+
+- Now 《Speak As》 is placed in the div tag chat-controls, which causes the display to change and distorted.
+Ideally, it is placed on the sidebar-tabs layer, between chatlog and chat-controls, but I don’t know how to write (CRY
+
 ## Changelog
 
 ### v1.1.4
