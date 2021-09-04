@@ -10,7 +10,7 @@ Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
     let HTML = $element.find(`div#chat-controls.flexrow`)[0];
     if (!HTML) return;
     $('#divnamelist').remove();
-    $('#chat-controls.flexrow').prepend(updateSpeakerList());
+    $('#chat-controls.flexrow').before(updateSpeakerList());
     $(".roll-type-select").css("color") ? color = $(".roll-type-select").css("color") : null;
     $(".roll-type-select").css("height") ? height = $(".roll-type-select").css("height") : null;
     $(".roll-type-select").css("background") ? bgcolor = $(".roll-type-select").css("background") : null;
@@ -32,7 +32,7 @@ function updateSpeakerList() {
     let myactors = game.actors.filter(actor => actor.permission >= 2);
     let selectedCharacter = myactors.find(actor => actor.id === myUser.character?.id);
 
-    let addText = `<div style="word-break: break-all;" id="divnamelist">
+    let addText = `<div style="flex: 0;" id="divnamelist">
 <input type="checkbox" id="speakerSwitch" name="speakerSwitch" checked>
     <select name="namelist" id="namelist" class="namelist">
     <optgroup label="Speak As....">`;
@@ -77,7 +77,7 @@ Hooks.on("chatMessage", (dialog, $element, targets) => {
 
 Hooks.on("renderActorDirectory", (dialog, $element, targets) => {
     $('#divnamelist').remove();
-    $('#chat-controls.flexrow').prepend(updateSpeakerList());
+    $('#chat-controls.flexrow').before(updateSpeakerList());
 
 
     $(".roll-type-select").css("color") ? color = $(".roll-type-select").css("color") : null;
