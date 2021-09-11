@@ -1,7 +1,27 @@
 var color;
 var height;
 var bgcolor;
-var width;
+var width = "80%";;
+
+Hooks.once('init', () => {
+    //Not used anymore but kept for compatibility with migration
+    game.settings.register("speak-as", "checked", {
+        name: "checked",
+        scope: "client",
+        default: true,
+        type: Boolean,
+        config: false
+    });
+
+});
+
+Hooks.once('ready', () => {
+    const btn = document.querySelector('#speakerSwitch');
+    btn.addEventListener('click', (event) => {
+        let checked = document.getElementById("speakerSwitch").checked;
+        game.settings.set("speak-as", "checked", checked)
+    });
+});
 Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
     /**
      * 自己的登入名字
@@ -14,7 +34,7 @@ Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
     $(".roll-type-select").css("color") ? color = $(".roll-type-select").css("color") : null;
     $(".roll-type-select").css("height") ? height = $(".roll-type-select").css("height") : null;
     $(".roll-type-select").css("background") ? bgcolor = $(".roll-type-select").css("background") : null;
-    $(".roll-type-select").css("width") ? width = $(".roll-type-select").css("width") : null;
+    check();
 
     var x = document.querySelectorAll("#namelist");
     if (width) x[0].style.setProperty("width", width, "important")
@@ -33,7 +53,7 @@ function updateSpeakerList() {
     let selectedCharacter = myactors.find(actor => actor.id === myUser.character?.id);
 
     let addText = `<div style="flex: 0;" id="divnamelist">
-<input type="checkbox" id="speakerSwitch" name="speakerSwitch" checked>
+    <input type="checkbox" id="speakerSwitch" name="speakerSwitch" checked>
     <select name="namelist" id="namelist" class="namelist">
     <optgroup label="Speak As....">`;
     if (selectedCharacter) addText += `<option value="${selectedCharacter.id}">${selectedCharacter.name}</option>`
@@ -78,18 +98,24 @@ Hooks.on("chatMessage", (dialog, $element, targets) => {
 Hooks.on("renderActorDirectory", (dialog, $element, targets) => {
     $('#divnamelist').remove();
     $('#chat-controls.flexrow').before(updateSpeakerList());
-
+    check()
 
     $(".roll-type-select").css("color") ? color = $(".roll-type-select").css("color") : null;
     $(".roll-type-select").css("height") ? height = $(".roll-type-select").css("height") : null;
     $(".roll-type-select").css("background") ? bgcolor = $(".roll-type-select").css("background") : null;
-    $(".roll-type-select").css("width") ? width = $(".roll-type-select").css("width") : null;
     var x = document.querySelectorAll("#namelist");
     if (width) x[0].style.setProperty("width", width, "important")
     if (color) x[0].style.setProperty("color", color, "important")
     if (height) x[0].style.setProperty("height", height, "important")
     if (bgcolor) x[0].style.setProperty("background", bgcolor, "important")
 });
+
+function check() {
+    let checked = game.settings.get("speak-as", "checked")
+    document.getElementById("speakerSwitch").checked = checked;
+}
+
+
 
 
     //targets.speaker.token = "XXX"
