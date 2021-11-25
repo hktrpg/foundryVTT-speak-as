@@ -98,12 +98,13 @@ Hooks.on("chatMessage", (dialog, $element, targets) => {
 Hooks.on("renderActorDirectory", (dialog, $element, targets) => {
     $('#divnamelist').remove();
     $('#chat-controls.flexrow').before(updateSpeakerList());
-    check()
+    check();
 
     $(".roll-type-select").css("color") ? color = $(".roll-type-select").css("color") : null;
     $(".roll-type-select").css("height") ? height = $(".roll-type-select").css("height") : null;
     $(".roll-type-select").css("background") ? bgcolor = $(".roll-type-select").css("background") : null;
     var x = document.querySelectorAll("#namelist");
+    if (!x.length) return;
     if (width) x[0].style.setProperty("width", width, "important")
     if (color) x[0].style.setProperty("color", color, "important")
     if (height) x[0].style.setProperty("height", height, "important")
@@ -112,7 +113,8 @@ Hooks.on("renderActorDirectory", (dialog, $element, targets) => {
 
 function check() {
     let checked = game.settings.get("speak-as", "checked")
-    document.getElementById("speakerSwitch").checked = checked;
+    let speaker = document.getElementById("speakerSwitch");
+    if (speaker) speaker.checked = checked;
 }
 
 
