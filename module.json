@@ -14,13 +14,6 @@
   ],
   "esmodules": [],
   "styles": [],
-  "languages": [
-    {
-      "lang": "en",
-      "name": "English",
-      "path": "languages/en.json"
-    }
-  ],
   "packs": [],
   "system": [],
   "dependencies": [],
