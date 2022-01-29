@@ -6,7 +6,7 @@
   "authors": [],
   "url": "https://github.com/hktrpg/foundryVTT-speak-as",
   "flags": {},
-  "version": "1.2.1",
+  "version": "1.2.2",
   "minimumCoreVersion": "0.8.9",
   "compatibleCoreVersion": "0.8.9",
   "scripts": [
