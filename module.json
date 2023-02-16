@@ -3,12 +3,19 @@
   "title": "Speak As……",
   "description": "Specify the identity of the speaker, no longer based on the selected of the Token",
   "author": "Sad, HKTRPG",
-  "authors": [],
   "url": "https://github.com/hktrpg/foundryVTT-speak-as",
   "flags": {},
-  "version": "1.2.2",
-  "minimumCoreVersion": "0.8.9",
-  "compatibleCoreVersion": "0.8.9",
+  "version": "1.3.0",
+  "authors": [
+    {
+      "name": "HKTRPG",
+      "discord": "zzz#8939"
+    }
+  ],
+  "compatibility": {
+    "minimum": "10",
+    "verified": "10"
+  },
   "scripts": [
     "./index.js"
   ],
