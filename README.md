@@ -22,6 +22,10 @@ Specify the identity of the speaker, no longer based on the selected token
 
 ## Changelog
 
+### v1.3.1
+
+Remove V10 warnings, thankyou for @farling42
+
 ### v1.3.0
 
 fit fot fvtt v10
