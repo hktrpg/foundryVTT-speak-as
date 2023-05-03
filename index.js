@@ -45,12 +45,30 @@ Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
     $('#speakerSwitch').attr('title', 'Disable Speak As…… if unchecked');
 });
 
-
-
+function resortCharacter(activeActor, characterList, selectedCharacter) {
+    let newCharacterList = [];
+    for (let index = 0; index < characterList.length; index++) {
+        let check = false;
+        for (let index2 = 0; index2 < activeActor.length; index2++) {
+            if (activeActor[index2] === characterList[index].name) {
+                check = true;
+                break;
+            }
+        }
+        if (selectedCharacter === characterList[index].name) break;
+        if (check) newCharacterList.unshift(characterList[index]);
+        else newCharacterList.push(characterList[index]);
+    }
+    let uniq = [...new Set(newCharacterList)];
+    return uniq;
+}
 function updateSpeakerList() {
     let myUser = game.users.find(user => user.id == game.userId);
     let myactors = game.actors.filter(actor => actor.permission >= 2);
     let selectedCharacter = myactors.find(actor => actor.id === myUser.character?.id);
+    const users = game.users.filter(user => user.active);
+    let playerNames = users.map(u => u.character.name)
+    myactors = resortCharacter(playerNames, myactors, selectedCharacter?.name);
 
     let addText = `<div style="flex: 0;" id="divnamelist">
     <input type="checkbox" id="speakerSwitch" name="speakerSwitch" checked>
