@@ -82,7 +82,10 @@ Hooks.on("chatMessage", (dialog, $element, targets) => {
                 return token.name == namelist.options[namelist.selectedIndex].text
             })
             if (!target) {
-                targets.speaker.token = 'Speak As zzzz';
+                let myactors = game.actors.filter(actor => actor.permission >= 2);
+                let actortarget = myactors.find(actor => actor.name === namelist.options[namelist.selectedIndex].text);
+                if (!actortarget) return;
+                targets.speaker.token = actortarget.id;
                 targets.speaker.alias = namelist.options[namelist.selectedIndex].text;
             }
             if (target) {
