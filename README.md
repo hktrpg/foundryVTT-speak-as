@@ -22,6 +22,10 @@ Specify the identity of the speaker, no longer based on the selected token
 
 ## Changelog
 
+### v1.4.0
+
+fix #12 ID problem. @IrishWolf
+
 ### v1.3.1
 
 Remove V10 warnings, thankyou for @farling42
