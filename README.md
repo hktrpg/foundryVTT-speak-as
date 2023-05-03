@@ -22,6 +22,10 @@ Specify the identity of the speaker, no longer based on the selected token
 
 ## Changelog
 
+### v1.5.0
+
+Show online actor first and remove dup
+
 ### v1.4.0
 
 fix #12 ID problem. @IrishWolf
