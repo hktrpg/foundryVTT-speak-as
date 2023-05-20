@@ -22,6 +22,9 @@ Specify the identity of the speaker, no longer based on the selected token
 
 ## Changelog
 
+### v1.5.1
+
+fix >-u.character?.name
 ### v1.5.0
 
 Show online actor first and remove dup
