@@ -67,7 +67,7 @@ function updateSpeakerList() {
     let myactors = game.actors.filter(actor => actor.permission >= 2);
     let selectedCharacter = myactors.find(actor => actor.id === myUser.character?.id);
     const users = game.users.filter(user => user.active);
-    let playerNames = users.map(u => u.character.name)
+    let playerNames = users.map(u => u.character?.name)
     myactors = resortCharacter(playerNames, myactors, selectedCharacter?.name);
 
     let addText = `<div style="flex: 0;" id="divnamelist">
