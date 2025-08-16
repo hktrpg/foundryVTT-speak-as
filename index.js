@@ -14,20 +14,18 @@ Hooks.once('init', () => {
     });
 
 });
-
 Hooks.once('ready', () => {
-    const btn = document.querySelector('#speakerSwitch');
-    btn.addEventListener('click', (event) => {
-        let checked = document.getElementById("speakerSwitch").checked;
-        game.settings.set("speak-as", "checked", checked)
-    });
+    // Event listener will be set up when the element is created in renderSidebarTab
 });
-Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
+
+Hooks.on("renderChatLog", () => {
     /**
      * 自己的登入名字
      * 自己擁有的角色
     */
-    let HTML = $element.find(`div#chat-controls.flexrow`)[0];
+
+    let HTML = document.getElementById('chat-controls')
+    console.log(HTML);
     if (!HTML) return;
     $('#divnamelist').remove();
     $('#chat-controls.flexrow').before(updateSpeakerList());
@@ -37,12 +35,24 @@ Hooks.on("renderSidebarTab", (dialog, $element, targets) => {
     check();
 
     var x = document.querySelectorAll("#namelist");
-    if (width) x[0].style.setProperty("width", width, "important")
-    if (color) x[0].style.setProperty("color", color, "important")
-    if (height) x[0].style.setProperty("height", height, "important")
-    if (bgcolor) x[0].style.setProperty("background", bgcolor, "important")
+    if (x.length > 0 && x[0]) {
+        if (width) x[0].style.setProperty("width", width, "important")
+        if (color) x[0].style.setProperty("color", color, "important")
+        if (height) x[0].style.setProperty("height", height, "important")
+        if (bgcolor) x[0].style.setProperty("background", bgcolor, "important")
+    }
     $('#namelist').attr('title', 'Speak As……');
     $('#speakerSwitch').attr('title', 'Disable Speak As…… if unchecked');
+
+    // Set up event listener for the speaker switch
+    const speakerSwitch = document.getElementById('speakerSwitch');
+    if (speakerSwitch && !speakerSwitch.hasAttribute('data-listener-attached')) {
+        speakerSwitch.addEventListener('click', (event) => {
+            let checked = document.getElementById("speakerSwitch").checked;
+            game.settings.set("speak-as", "checked", checked);
+        });
+        speakerSwitch.setAttribute('data-listener-attached', 'true');
+    }
 });
 
 function resortCharacter(activeActor, characterList, selectedCharacter) {
@@ -130,6 +140,16 @@ Hooks.on("renderActorDirectory", (dialog, $element, targets) => {
     if (color) x[0].style.setProperty("color", color, "important")
     if (height) x[0].style.setProperty("height", height, "important")
     if (bgcolor) x[0].style.setProperty("background", bgcolor, "important")
+
+    // Set up event listener for the speaker switch
+    const speakerSwitch = document.getElementById('speakerSwitch');
+    if (speakerSwitch && !speakerSwitch.hasAttribute('data-listener-attached')) {
+        speakerSwitch.addEventListener('click', (event) => {
+            let checked = document.getElementById("speakerSwitch").checked;
+            game.settings.set("speak-as", "checked", checked);
+        });
+        speakerSwitch.setAttribute('data-listener-attached', 'true');
+    }
 });
 
 function check() {
@@ -141,10 +161,10 @@ function check() {
 
 
 
-    //targets.speaker.token = "XXX"
-    //2)如場上有同樣的TOKEN，使用那個TOKEN發言
-    //targets.speaker.actor = '';
-    //  targets.speaker.alias = 'XXX';
+//targets.speaker.token = "XXX"
+//2)如場上有同樣的TOKEN，使用那個TOKEN發言
+//targets.speaker.actor = '';
+//  targets.speaker.alias = 'XXX';
 
 /***
 

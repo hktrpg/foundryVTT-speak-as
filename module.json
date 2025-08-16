@@ -1,6 +1,6 @@
 {
-  "name": "speak-as",
-  "id": "speak-as",
+  "name": "foundryVTT-speak-as",
+  "id": "foundryVTT-speak-as",
   "title": "Speak As……",
   "description": "Specify the identity of the speaker, no longer based on the selected of the Token",
   "author": "Sad, HKTRPG",
