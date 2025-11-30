@@ -7,6 +7,8 @@ const width = "80%";
 // UI state management
 let rendered = false;
 let speakAsContainer = null;
+let characterOptions = []; // Store character options for search
+let selectedCharacterValue = null; // Store selected character value
 
 Hooks.once('init', () => {
     //Not used anymore but kept for compatibility with migration
@@ -109,6 +111,15 @@ function renderSpeakAsUI() {
         if (!inputElement) {
             console.warn("Speak-As: Chat message input not found");
             return;
+        }
+
+        // Save current selection before re-rendering
+        const existingInput = document.getElementById('namelist');
+        if (existingInput) {
+            const currentValue = existingInput.getAttribute('data-selected-value');
+            if (currentValue) {
+                selectedCharacterValue = currentValue;
+            }
         }
 
         // Check if element already exists and is in correct position
@@ -228,12 +239,11 @@ function applyDynamicStyling() {
         bgcolor = computedStyle.background;
     }
 
-    const nameList = speakAsContainer.querySelector("#namelist");
-    if (nameList) {
-        if (width) nameList.style.setProperty("width", width, "important");
-        if (color) nameList.style.setProperty("color", color, "important");
-        if (height) nameList.style.setProperty("height", height, "important");
-        if (bgcolor) nameList.style.setProperty("background", bgcolor, "important");
+    const nameListInput = speakAsContainer.querySelector("#namelist");
+    if (nameListInput) {
+        if (color) nameListInput.style.setProperty("color", color, "important");
+        if (height) nameListInput.style.setProperty("height", height, "important");
+        if (bgcolor) nameListInput.style.setProperty("background", bgcolor, "important");
     }
 }
 
@@ -244,17 +254,283 @@ function setupEventListeners() {
     if (!speakAsContainer) return;
 
     const speakerSwitch = speakAsContainer.querySelector('#speakerSwitch');
-    const nameList = speakAsContainer.querySelector('#namelist');
+    const nameListInput = speakAsContainer.querySelector('#namelist');
+    const dropdown = speakAsContainer.querySelector('#namelist-dropdown');
 
     if (speakerSwitch && !speakerSwitch.hasAttribute('data-listener-attached')) {
         speakerSwitch.addEventListener('change', handleSpeakerSwitchChange);
         speakerSwitch.setAttribute('data-listener-attached', 'true');
     }
 
-    if (nameList) {
-        nameList.addEventListener('keydown', handleKeyDown);
-        nameList.setAttribute('title', 'Speak As……');
+    if (nameListInput && !nameListInput.hasAttribute('data-listener-attached')) {
+        // Focus events
+        nameListInput.addEventListener('focus', handleSearchFocus);
+        nameListInput.addEventListener('blur', handleSearchBlur);
+        
+        // Input events for search
+        nameListInput.addEventListener('input', handleSearchInput);
+        
+        // Keyboard navigation
+        nameListInput.addEventListener('keydown', handleSearchKeyDown);
+        
+        nameListInput.setAttribute('data-listener-attached', 'true');
     }
+
+        // Refresh character options and populate dropdown initially
+        characterOptions = generateCharacterOptions();
+        if (dropdown) {
+            populateDropdown(characterOptions);
+        }
+}
+
+/**
+ * Handles search input focus
+ */
+function handleSearchFocus(event) {
+    const dropdown = speakAsContainer?.querySelector('#namelist-dropdown');
+    if (dropdown) {
+        dropdown.style.display = 'block';
+        // Reset scroll position to top when showing dropdown (since it opens upward)
+        dropdown.scrollTop = 0;
+        // Always show all options when focused, regardless of input value
+        populateDropdown(characterOptions);
+    }
+}
+
+/**
+ * Handles search input blur (with delay to allow click events)
+ */
+function handleSearchBlur(event) {
+    // Delay to allow click events on dropdown items
+    setTimeout(() => {
+        const dropdown = speakAsContainer?.querySelector('#namelist-dropdown');
+        if (dropdown) {
+            dropdown.style.display = 'none';
+        }
+    }, 200);
+}
+
+/**
+ * Handles search input changes
+ */
+function handleSearchInput(event) {
+    const searchValue = event.target.value.trim();
+    const dropdown = speakAsContainer?.querySelector('#namelist-dropdown');
+    
+    // Only filter when user has typed something
+    if (searchValue.length > 0) {
+        // User is typing, filter the options
+        const filtered = filterAndShowDropdown(searchValue);
+        
+        // Auto-fill: if exact match found, select it
+        const exactMatch = characterOptions.find(opt => 
+            opt.text.toLowerCase() === searchValue.toLowerCase()
+        );
+        
+        if (exactMatch) {
+            event.target.setAttribute('data-selected-value', exactMatch.value);
+            selectedCharacterValue = exactMatch.value;
+        } else if (filtered.length === 1) {
+            // If only one match, auto-select it
+            const singleMatch = filtered[0];
+            event.target.setAttribute('data-selected-value', singleMatch.value);
+            selectedCharacterValue = singleMatch.value;
+        } else {
+            // Clear selection if no exact match
+            event.target.removeAttribute('data-selected-value');
+            selectedCharacterValue = null;
+        }
+    } else {
+        // Input is empty, show all options
+        if (dropdown) {
+            populateDropdown(characterOptions);
+        }
+        // Clear selection when input is cleared
+        event.target.removeAttribute('data-selected-value');
+        selectedCharacterValue = null;
+    }
+}
+
+/**
+ * Filters and displays dropdown options based on search query
+ * @param {string} searchQuery - Search query string
+ * @returns {Array} Filtered options array
+ */
+function filterAndShowDropdown(searchQuery = '') {
+    const dropdown = speakAsContainer?.querySelector('#namelist-dropdown');
+    if (!dropdown) return [];
+
+    const query = searchQuery.toLowerCase().trim();
+    let filteredOptions = characterOptions;
+
+    if (query) {
+        filteredOptions = characterOptions.filter(opt => 
+            opt.text.toLowerCase().includes(query)
+        );
+    }
+
+    populateDropdown(filteredOptions, query);
+    // Reset scroll position to top (since dropdown opens upward)
+    dropdown.scrollTop = 0;
+    return filteredOptions;
+}
+
+/**
+ * Populates the dropdown with options
+ */
+function populateDropdown(options, highlightQuery = '') {
+    const dropdown = speakAsContainer?.querySelector('#namelist-dropdown');
+    if (!dropdown) return;
+
+    if (options.length === 0) {
+        dropdown.innerHTML = '<div style="padding: 8px; color: #999; text-align: center;">No matches found</div>';
+        return;
+    }
+
+    let html = '';
+    for (const option of options) {
+        let displayText = option.text;
+        
+        // Highlight matching text if query provided
+        if (highlightQuery) {
+            const regex = new RegExp(`(${highlightQuery})`, 'gi');
+            displayText = displayText.replace(regex, '<mark style="background: rgba(255, 255, 0, 0.3);">$1</mark>');
+        }
+
+        html += `
+            <div class="dropdown-option" 
+                data-value="${option.value}" 
+                data-text="${option.text}"
+                style="
+                    padding: 6px 8px;
+                    cursor: pointer;
+                    color: #fff;
+                    font-size: 12px;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                    transition: background 0.15s;
+                "
+                onmouseover="this.style.background='rgba(255, 255, 255, 0.1)'"
+                onmouseout="this.style.background='transparent'">
+                ${displayText}
+            </div>`;
+    }
+
+    dropdown.innerHTML = html;
+    
+    // Reset scroll position to top (since dropdown opens upward)
+    dropdown.scrollTop = 0;
+
+    // Add click listeners to dropdown options
+    const optionElements = dropdown.querySelectorAll('.dropdown-option');
+    optionElements.forEach(optionEl => {
+        optionEl.addEventListener('click', (e) => {
+            const value = e.currentTarget.getAttribute('data-value');
+            const text = e.currentTarget.getAttribute('data-text');
+            selectCharacter(value, text);
+        });
+    });
+}
+
+/**
+ * Selects a character from the dropdown
+ */
+function selectCharacter(value, text) {
+    const nameListInput = speakAsContainer?.querySelector('#namelist');
+    const dropdown = speakAsContainer?.querySelector('#namelist-dropdown');
+    
+    if (nameListInput) {
+        nameListInput.value = text;
+        nameListInput.setAttribute('data-selected-value', value);
+        selectedCharacterValue = value;
+    }
+    
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+    
+    // Blur the input to close dropdown
+    if (nameListInput) {
+        nameListInput.blur();
+    }
+}
+
+/**
+ * Handles keyboard navigation in search input
+ */
+function handleSearchKeyDown(event) {
+    const dropdown = speakAsContainer?.querySelector('#namelist-dropdown');
+    if (!dropdown || dropdown.style.display === 'none') {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            // Try to select first match or current value
+            const input = event.target;
+            const query = input.value.toLowerCase().trim();
+            const match = characterOptions.find(opt => 
+                opt.text.toLowerCase() === query || 
+                opt.text.toLowerCase().startsWith(query)
+            );
+            if (match) {
+                selectCharacter(match.value, match.text);
+            }
+        }
+        return;
+    }
+
+    const options = dropdown.querySelectorAll('.dropdown-option');
+    const currentFocused = dropdown.querySelector('.dropdown-option.highlighted');
+    let currentIndex = currentFocused ? Array.from(options).indexOf(currentFocused) : -1;
+
+    switch (event.key) {
+        case 'ArrowDown':
+            event.preventDefault();
+            currentIndex = (currentIndex + 1) % options.length;
+            highlightOption(options, currentIndex);
+            break;
+        
+        case 'ArrowUp':
+            event.preventDefault();
+            currentIndex = currentIndex <= 0 ? options.length - 1 : currentIndex - 1;
+            highlightOption(options, currentIndex);
+            break;
+        
+        case 'Enter':
+            event.preventDefault();
+            if (currentFocused) {
+                const value = currentFocused.getAttribute('data-value');
+                const text = currentFocused.getAttribute('data-text');
+                selectCharacter(value, text);
+            } else if (options.length > 0) {
+                // Select first option if none highlighted
+                const firstOption = options[0];
+                const value = firstOption.getAttribute('data-value');
+                const text = firstOption.getAttribute('data-text');
+                selectCharacter(value, text);
+            }
+            break;
+        
+        case 'Escape':
+            event.preventDefault();
+            dropdown.style.display = 'none';
+            event.target.blur();
+            break;
+    }
+}
+
+/**
+ * Highlights a dropdown option
+ */
+function highlightOption(options, index) {
+    options.forEach((opt, i) => {
+        if (i === index) {
+            opt.classList.add('highlighted');
+            opt.style.background = 'rgba(255, 255, 255, 0.2)';
+            // Scroll into view
+            opt.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        } else {
+            opt.classList.remove('highlighted');
+            opt.style.background = 'transparent';
+        }
+    });
 }
 
 /**
@@ -265,15 +541,6 @@ function handleSpeakerSwitchChange(event) {
     game.settings.set("speak-as", "checked", checked);
 }
 
-/**
- * Handles keyboard navigation
- */
-function handleKeyDown(event) {
-    if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        // Allow default behavior for select dropdown
-    }
-}
 
 /**
  * Updates the UI state based on settings
@@ -316,13 +583,13 @@ function resortCharacter(activeActorNames, characterList, selectedCharacterName)
 }
 
 /**
- * Generates the HTML for the Speak-As UI
- * @returns {string} HTML string
+ * Generates character options list for search
+ * @returns {Array} Array of character options
  */
-function generateSpeakAsHTML() {
+function generateCharacterOptions() {
     try {
         const currentUser = game.users.find(user => user.id === game.userId);
-        if (!currentUser) return '';
+        if (!currentUser) return [];
 
         const availableActors = game.actors.filter(actor => actor.permission >= 2);
         const selectedCharacter = availableActors.find(actor => actor.id === currentUser.character?.id);
@@ -330,6 +597,54 @@ function generateSpeakAsHTML() {
         const activePlayerNames = activeUsers.map(u => u.character?.name).filter(Boolean);
 
         const sortedActors = resortCharacter(activePlayerNames, availableActors, selectedCharacter?.name);
+
+        const options = [];
+
+        // Add selected character first if exists
+        if (selectedCharacter) {
+            options.push({
+                value: selectedCharacter.id,
+                text: selectedCharacter.name,
+                isUser: false
+            });
+        }
+
+        // Add current user
+        options.push({
+            value: 'userName',
+            text: currentUser.name,
+            isUser: true
+        });
+
+        // Add other available actors
+        for (const actor of sortedActors) {
+            if (selectedCharacter && actor.id === selectedCharacter.id) continue; // Skip if already added
+            options.push({
+                value: actor.id,
+                text: actor.name,
+                isUser: false
+            });
+        }
+
+        return options;
+    } catch (error) {
+        console.error("Speak-As: Error generating character options:", error);
+        return [];
+    }
+}
+
+/**
+ * Generates the HTML for the Speak-As UI
+ * @returns {string} HTML string
+ */
+function generateSpeakAsHTML() {
+    try {
+        characterOptions = generateCharacterOptions();
+        if (characterOptions.length === 0) return '';
+
+        // Get initial selected value (default to first option or previously selected)
+        const initialValue = selectedCharacterValue || characterOptions[0]?.value || '';
+        const initialText = characterOptions.find(opt => opt.value === initialValue)?.text || characterOptions[0]?.text || '';
 
         let html = `
             <label for="speakerSwitch" style="
@@ -346,33 +661,46 @@ function generateSpeakAsHTML() {
                    
                 "
                 aria-label="Enable/disable speak as functionality">
-            <select name="namelist" id="namelist" class="namelist"
-                style="
-                    flex: 1;
-                    min-width: 120px;
+            <div class="speak-as-search-wrapper" style="
+                position: relative;
+                flex: 1;
+                min-width: 120px;
+            ">
+                <input type="text" 
+                    id="namelist" 
+                    class="namelist-search" 
+                    name="namelist"
+                    value="${initialText}"
+                    autocomplete="off"
+                    placeholder="Search or select..."
+                    style="
+                        width: 100%;
+                        border-radius: 3px;
+                        padding: 2px 4px;
+                        font-size: 12px;
+                        cursor: pointer;
+                        box-sizing: border-box;
+                    "
+                    aria-label="Select speaker identity"
+                    data-selected-value="${initialValue}"
+                    title="Speak As……">
+                <div id="namelist-dropdown" class="namelist-dropdown" style="
+                    display: none;
+                    position: absolute;
+                    bottom: 100%;
+                    left: 0;
+                    right: 0;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    background: rgba(0, 0, 0, 0.95);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
                     border-radius: 3px;
-                    padding: 2px 4px;
-                    font-size: 12px;
-                    cursor: pointer;
-                "
-                aria-label="Select speaker identity">
-                <optgroup label="Speak As....">`;
+                    margin-bottom: 2px;
+                    z-index: 1000;
+                    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.3);
+                "></div>
+            </div>`;
 
-        // Add selected character first if exists
-        if (selectedCharacter) {
-            html += `<option value="${selectedCharacter.id}">${selectedCharacter.name}</option>`;
-        }
-
-        // Add current user
-        html += `<option value="userName">${currentUser.name}</option>`;
-
-        // Add other available actors
-        for (const actor of sortedActors) {
-            if (selectedCharacter && actor.id === selectedCharacter.id) continue; // Skip if already added
-            html += `<option value="${actor.id}">${actor.name}</option>`;
-        }
-
-        html += `</optgroup></select>`;
         return html;
     } catch (error) {
         console.error("Speak-As: Error generating HTML:", error);
@@ -389,13 +717,33 @@ Hooks.on("chatMessage", (dialog, $element, targets) => {
         const isEnabled = game.settings.get("speak-as", "checked");
         if (!isEnabled) return;
 
-        const nameList = document.getElementById('namelist');
-        if (!nameList) return;
+        const nameListInput = document.getElementById('namelist');
+        if (!nameListInput) return;
 
-        const selectedValue = nameList.value;
-        const selectedText = nameList.options[nameList.selectedIndex]?.text;
+        // Get selected value from data attribute or try to match by text
+        let selectedValue = nameListInput.getAttribute('data-selected-value');
+        const selectedText = nameListInput.value;
 
         if (!selectedText) return;
+
+        // If no data-selected-value, try to find matching option
+        if (!selectedValue) {
+            const match = characterOptions.find(opt => opt.text === selectedText);
+            if (match) {
+                selectedValue = match.value;
+            } else {
+                // Try partial match
+                const partialMatch = characterOptions.find(opt => 
+                    opt.text.toLowerCase().includes(selectedText.toLowerCase()) ||
+                    selectedText.toLowerCase().includes(opt.text.toLowerCase())
+                );
+                if (partialMatch) {
+                    selectedValue = partialMatch.value;
+                }
+            }
+        }
+
+        if (!selectedValue) return;
 
         switch (selectedValue) {
             case 'userName':
