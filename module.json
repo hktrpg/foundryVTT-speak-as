@@ -1,12 +1,12 @@
 {
   "name": "foundryVTT-speak-as",
-  "id": "foundryVTT-speak-as",
+  "id": "speak-as",
   "title": "Speak As……",
   "description": "Specify the identity of the speaker, no longer based on the selected of the Token",
   "author": "Sad, HKTRPG",
   "url": "https://github.com/hktrpg/foundryVTT-speak-as",
   "flags": {},
-  "version": "2.0.1",
+  "version": "2.0.2",
   "authors": [
     {
       "name": "HKTRPG",
