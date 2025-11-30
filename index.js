@@ -26,30 +26,74 @@ Hooks.once('ready', () => {
 
 Hooks.on("renderChatLog", (chatlog, html, data, opt) => {
     if (!chatlog.isPopout) return;
-    renderSpeakAsUI();
+    // Use setTimeout to ensure DOM is fully rendered
+    setTimeout(() => renderSpeakAsUI(), 0);
 });
 
 Hooks.on("closeChatLog", (chatlog, html, data, opt) => {
     if (!chatlog.isPopout) return;
     $('#divnamelist').remove();
     rendered = false;
+    speakAsContainer = null;
 });
 
 Hooks.on("activateChatLog", (chatlog) => {
     if (ui.chat.popout?.rendered && !ui.chat.isPopout) return;
-    renderSpeakAsUI();
+    // Use setTimeout to ensure DOM is fully rendered
+    setTimeout(() => renderSpeakAsUI(), 0);
+    startPositionMonitoring();
 });
 
 Hooks.on("deactivateChatLog", (chatlog) => {
-    if (ui.chat.popout?.rendered && !ui.chat.isPopout) return;
+    if (ui.chat.popout?.rendered && !ui.chat.isPopout) {
+        stopPositionMonitoring();
+        return;
+    }
     $('#divnamelist').remove();
     rendered = false;
+    speakAsContainer = null;
+    stopPositionMonitoring();
 });
 
 Hooks.on("collapseSidebar", (sidebar, wasExpanded) => {
     if (ui.chat.popout?.rendered && !ui.chat.isPopout) return;
-    if (!wasExpanded) renderSpeakAsUI();
+    if (!wasExpanded) {
+        // Use setTimeout to ensure DOM is fully rendered
+        setTimeout(() => renderSpeakAsUI(), 0);
+    }
 });
+
+// Monitor DOM changes to ensure UI stays in correct position
+let positionCheckInterval = null;
+
+function startPositionMonitoring() {
+    if (positionCheckInterval) return;
+    
+    positionCheckInterval = setInterval(() => {
+        const existing = document.getElementById('divnamelist');
+        const inputElement = document.getElementById("chat-message");
+        
+        if (existing && inputElement) {
+            const nextSibling = inputElement.nextElementSibling;
+            if (!nextSibling || nextSibling.id !== 'divnamelist') {
+                // UI is in wrong position, re-render
+                rendered = false;
+                renderSpeakAsUI();
+            }
+        } else if (inputElement && !existing) {
+            // Input exists but UI doesn't, re-render
+            rendered = false;
+            renderSpeakAsUI();
+        }
+    }, 500); // Check every 500ms
+}
+
+function stopPositionMonitoring() {
+    if (positionCheckInterval) {
+        clearInterval(positionCheckInterval);
+        positionCheckInterval = null;
+    }
+}
 
 // Cleanup on game unload
 Hooks.on("unload", () => {
@@ -60,8 +104,6 @@ Hooks.on("unload", () => {
  * Renders the Speak-As UI component
  */
 function renderSpeakAsUI() {
-    if (rendered) return;
-
     try {
         const inputElement = document.getElementById("chat-message");
         if (!inputElement) {
@@ -69,12 +111,46 @@ function renderSpeakAsUI() {
             return;
         }
 
-        // Remove existing UI if present
+        // Check if element already exists and is in correct position
+        const existing = document.getElementById('divnamelist');
+        if (existing) {
+            // Verify it's in the correct position (right after chat-message)
+            const nextSibling = inputElement.nextElementSibling;
+            if (nextSibling && nextSibling.id === 'divnamelist') {
+                // Already in correct position, just update state
+                speakAsContainer = existing;
+                rendered = true;
+                applyDynamicStyling();
+                setupEventListeners();
+                updateSpeakerSwitchState();
+                return;
+            } else {
+                // Exists but in wrong position, remove it
+                existing.remove();
+            }
+        }
+
+        // Remove existing UI if present (cleanup)
         removeExistingUI();
 
         // Create and insert the speak-as UI
         speakAsContainer = createSpeakAsContainer();
+        
+        // Ensure we insert right after the textarea, not before other elements
+        // Use insertAdjacentElement which is more reliable than appendChild
         inputElement.insertAdjacentElement("afterend", speakAsContainer);
+
+        // Verify insertion was successful
+        const verifyNext = inputElement.nextElementSibling;
+        if (!verifyNext || verifyNext.id !== 'divnamelist') {
+            console.warn("Speak-As: Failed to insert UI in correct position, retrying...");
+            // Fallback: find the parent form and append after textarea
+            const form = inputElement.closest('form.chat-form');
+            if (form) {
+                speakAsContainer.remove();
+                inputElement.insertAdjacentElement("afterend", speakAsContainer);
+            }
+        }
 
         // Apply styling and setup
         applyDynamicStyling();
@@ -84,6 +160,7 @@ function renderSpeakAsUI() {
         rendered = true;
     } catch (error) {
         console.error("Speak-As: Error rendering UI:", error);
+        rendered = false;
     }
 }
 
@@ -103,6 +180,7 @@ function removeExistingUI() {
  * Cleans up the module state
  */
 function cleanup() {
+    stopPositionMonitoring();
     removeExistingUI();
     rendered = false;
     speakAsContainer = null;
@@ -256,7 +334,6 @@ function generateSpeakAsHTML() {
         let html = `
             <label for="speakerSwitch" style="
                 font-size: 11px;
-                color: var(--color-text-light-primary, #c9c7ba);
                 white-space: nowrap;
                 cursor: pointer;
                 font-weight: 500;
@@ -266,17 +343,14 @@ function generateSpeakAsHTML() {
                 style="
                     margin: 0;
                     cursor: pointer;
-                    accent-color: var(--color-text-light-highlight, #ffffff);
+                   
                 "
                 aria-label="Enable/disable speak as functionality">
             <select name="namelist" id="namelist" class="namelist"
                 style="
                     flex: 1;
                     min-width: 120px;
-                    background: rgba(0, 0, 0, 0.3);
-                    border: 1px solid rgba(255, 255, 255, 0.2);
                     border-radius: 3px;
-                    color: var(--color-text-light-primary, #c9c7ba);
                     padding: 2px 4px;
                     font-size: 12px;
                     cursor: pointer;
