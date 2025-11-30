@@ -1,0 +1,110 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Setup Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+    - name: Extract current version from module.json
+      id: current_version
+      run: |
+        CURRENT_VERSION=$(node -p "require('./module.json').version")
+        echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+        echo "Current version: $CURRENT_VERSION"
+
+    - name: Generate new version
+      id: new_version
+      run: |
+        # Get current version and increment patch
+        CURRENT_VERSION=${{ steps.current_version.outputs.current_version }}
+        IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+        MAJOR=${VERSION_PARTS[0]}
+        MINOR=${VERSION_PARTS[1]}
+        PATCH=${VERSION_PARTS[2]}
+        NEW_PATCH=$((PATCH + 1))
+        NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "New version: $NEW_VERSION"
+
+    - name: Update module.json version
+      run: |
+        NEW_VERSION=${{ steps.new_version.outputs.new_version }}
+        node -e "
+          const fs = require('fs');
+          const moduleJson = JSON.parse(fs.readFileSync('module.json', 'utf8'));
+          moduleJson.version = '$NEW_VERSION';
+          fs.writeFileSync('module.json', JSON.stringify(moduleJson, null, 2) + '\n');
+        "
+        echo "Updated module.json to version $NEW_VERSION"
+
+    - name: Create module.zip
+      run: |
+        # Create zip file with all necessary files
+        zip -r module.zip . -x "*.git*" "*.github*" "node_modules/*" "*.zip"
+        echo "Created module.zip"
+
+    - name: Create Git tag
+      run: |
+        NEW_VERSION=${{ steps.new_version.outputs.new_version }}
+        git add module.json
+        git commit -m "Bump version to $NEW_VERSION [skip ci]"
+        git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
+        git push origin main
+        git push origin "v$NEW_VERSION"
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.new_version.outputs.new_version }}
+        name: Release v${{ steps.new_version.outputs.new_version }}
+        body: |
+          ## Speak-As Module v${{ steps.new_version.outputs.new_version }}
+
+          ### What's New
+
+          - Automated release
+          - Bug fixes and improvements
+
+          ### Features
+
+          - Allow speaking as different characters in Foundry VTT
+          - Support for tokens and actors
+          - Easy toggle functionality
+
+          ### Installation
+
+          Download the `module.zip` file and install it in your Foundry VTT modules directory.
+
+          ### Usage
+
+          1. Enable the module in your Foundry VTT world
+          2. Open chat and select "Speak As" to choose your speaker identity
+          3. Send messages to speak as the selected character
+
+        files: module.zip
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
